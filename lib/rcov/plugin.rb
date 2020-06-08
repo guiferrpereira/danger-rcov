@@ -1,33 +1,80 @@
+require 'open-uri'
+require 'net/http'
+
 module Danger
-  # This is your plugin class. Any attributes or methods you expose here will
-  # be available from within your Dangerfile.
-  #
-  # To be published on the Danger plugins site, you will need to have
-  # the public interface documented. Danger uses [YARD](http://yardoc.org/)
-  # for generating documentation from your plugin source, and you can verify
-  # by running `danger plugins lint` or `bundle exec rake spec`.
-  #
-  # You should replace these comments with a public description of your library.
-  #
-  # @example Ensure people are well warned about merging on Mondays
-  #
-  #          my_plugin.warn_on_mondays
-  #
-  # @see  Guilherme Pereira/danger-rcov
-  # @tags monday, weekends, time, rattata
-  #
   class DangerRcov < Plugin
+    def report(current_url:, master_url:)
+      # Get code coverage report as json from url
+      current_report = get_report(current_url)
 
-    # An attribute that you can read/write from your Dangerfile
-    #
-    # @return   [Array<String>]
-    attr_accessor :my_attribute
+      master_report = get_report(master_url)
+      # Output the processed report
+      output_report(current_report, master_report)
+    end
 
-    # A method that you can call from your Dangerfile
-    # @return   [Array<String>]
-    #
-    def warn_on_mondays
-      warn 'Trying to merge code on a Monday' if Date.today.wday == 1
+    def get_report(url:)
+      artifacts = JSON.parse(URI.parse(url).read).map { |a| a['url'] }
+
+      coverage_url = artifacts.find { |artifact| artifact.end_with?('coverage/coverage.json') }
+
+      return nil if !coverage_url
+
+      uri = URI.parse("#{coverage_url}?circle-token=#{ENV['CIRCLE_TOKEN']}")
+
+      response = Net::HTTP.get_response(uri)
+
+      JSON.parse(response.body)
+    end
+
+    def output_report(results, master_results)
+      @current_covered_percent = results.dig('metrics', 'covered_percent').round(2)
+      @current_files_count = results.dig('files')&.count
+      @current_total_lines = results.dig('metrics', 'total_lines')
+      @current_misses_count = @current_total_lines - results.dig('metrics', 'covered_lines')
+
+      if master_results
+        @master_covered_percent = master_results.dig('metrics', 'covered_percent').round(2)
+        @master_files_count = master_results.dig('files')&.count
+        @master_total_lines = master_results.dig('metrics', 'total_lines')
+        @master_misses_count = @master_total_lines - master_results.dig('metrics', 'covered_lines')
+      end
+
+      message = "```diff\n@@           Coverage Diff            @@\n"
+      message << "## #{justify_text('master', 16)} #{justify_text('#' + ENV['CIRCLE_PULL_REQUEST'].split('/').last, 8)} #{justify_text('+/-', 7)} #{justify_text('##', 3)}\n"
+      message << separator_line
+      message << new_line('Coverage', @current_covered_percent, @master_covered_percent, '%')
+      message << separator_line
+      message << new_line('Files', @current_files_count, @master_files_count)
+      message << new_line('Lines', @current_total_lines, @master_total_lines)
+      message << separator_line
+      message << new_line('Misses', @current_misses_count, @master_misses_count)
+      message << "```"
+    end
+
+    private
+
+    def self.separator_line
+      "========================================\n"
+    end
+
+    def self.new_line(title, current, master, symbol=nil)
+      formatter = symbol ? '%+.2f' : '%+d'
+      currrent_formatted = current.to_s + symbol.to_s
+      master_formatted = master ? master.to_s + symbol.to_s : '-'
+      prep = (master_formatted != '-' && current - master != 0) ? '+ ' : '  '
+
+      line = data_string(title, master_formatted, currrent_formatted, prep)
+      line << justify_text(sprintf(formatter, current - master) + symbol.to_s, 8) if prep == '+ '
+      line << "\n"
+      line
+    end
+
+    def self.justify_text(string, adjust, position='right')
+      string.send(position == 'right' ? :rjust : :ljust, adjust)
+    end
+
+    def self.data_string(title, master, current, prep)
+      "#{prep}#{justify_text(title, 9, 'left')} #{justify_text(master, 7)}#{justify_text(current, 9)}"
     end
   end
 end
