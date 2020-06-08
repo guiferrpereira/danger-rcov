@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Rcov::VERSION
   spec.authors       = ['Guilherme Pereira']
   spec.email         = ['guiferrpereira@gmail.com']
-  spec.description   = %q{A short description of danger-rcov.}
-  spec.summary       = %q{A longer description of danger-rcov.}
-  spec.homepage      = 'https://github.com/Guilherme Pereira/danger-rcov'
+  spec.description   = %q{Plugin that allows code coverage print}
+  spec.summary       = %q{Plugin that allows code coverage print}
+  spec.homepage      = 'https://github.com/guiferrpereira/danger-rcov'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files`.split($/)
@@ -21,8 +21,8 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'danger-plugin-api', '~> 1.0'
 
   # General ruby development
-  spec.add_development_dependency 'bundler', '~> 1.3'
-  spec.add_development_dependency 'rake', '~> 10.0'
+  spec.add_development_dependency 'bundler', '~> 2.1'
+  spec.add_development_dependency 'rake', '~> 12.3'
 
   # Testing support
   spec.add_development_dependency 'rspec', '~> 3.4'
