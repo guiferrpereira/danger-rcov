@@ -3,11 +3,16 @@ require 'net/http'
 
 module Danger
   class DangerRcov < Plugin
-    def report(current_url:, master_url:)
+    def report(current_url:, master_url:, show_warning: true)
       # Get code coverage report as json from url
       current_report = get_report(url: current_url)
 
       master_report = get_report(url: master_url)
+
+      if show_warning && master_report && master_report['metrics']['covered_percent'].round(2)  > current_report['metrics']['covered_percent'].round(2)
+        warn("Code coverage decreased from #{master_report['metrics']['covered_percent'].round(2).to_s}% to #{current_report['metrics']['covered_percent'].round(2)}%")
+      end
+
       # Output the processed report
       output_report(current_report, master_report)
     end
