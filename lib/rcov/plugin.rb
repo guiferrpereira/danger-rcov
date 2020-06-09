@@ -53,11 +53,11 @@ module Danger
 
     private
 
-    def self.separator_line
+    def separator_line
       "========================================\n"
     end
 
-    def self.new_line(title, current, master, symbol=nil)
+    def new_line(title, current, master, symbol=nil)
       formatter = symbol ? '%+.2f' : '%+d'
       currrent_formatted = current.to_s + symbol.to_s
       master_formatted = master ? master.to_s + symbol.to_s : '-'
@@ -69,11 +69,11 @@ module Danger
       line
     end
 
-    def self.justify_text(string, adjust, position='right')
+    def justify_text(string, adjust, position='right')
       string.send(position == 'right' ? :rjust : :ljust, adjust)
     end
 
-    def self.data_string(title, master, current, prep)
+    def data_string(title, master, current, prep)
       "#{prep}#{justify_text(title, 9, 'left')} #{justify_text(master, 7)}#{justify_text(current, 9)}"
     end
   end
