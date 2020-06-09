@@ -5,9 +5,9 @@ module Danger
   class DangerRcov < Plugin
     def report(current_url:, master_url:)
       # Get code coverage report as json from url
-      current_report = get_report(current_url)
+      current_report = get_report(url: current_url)
 
-      master_report = get_report(master_url)
+      master_report = get_report(url: master_url)
       # Output the processed report
       output_report(current_report, master_report)
     end
