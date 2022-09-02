@@ -29,3 +29,12 @@ This plugin will provide an interface similar to codecov.
     # warning (default: true)
     markdown rcov.report_by_urls('http://current_branch/coverage.json', 'http://master_branch/coverage.json', true)
   ```
+
+  ```
+    # current branch json report file
+    # pr number
+    # stable branch json report file
+    # stable pr number
+    # warning (default: true)
+    markdown rcov.report_by_files(current_cov_json_file, current_pr_number, prev_cov_json_file, previous_pr_number, true)
+  ```
